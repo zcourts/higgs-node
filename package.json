@@ -1,35 +1,21 @@
 {
 	"name":"higgs",
 	"version":"0.0.1",
-	"author":{
-		"name":"Courtney Robinson"
-	},
 	"description":"Implementation of the Higgs Boson protocol.",
+	"author":"Courtney Robinson <higgs-node@crlog.info>",
+	"contributors":[],
 	"dependencies":{
 	},
-	"main":"higgs",
-	"keywords":["higgs", "boson", "tcp", "buffer", "byte", "binary", "protocol"],
-	"directories":{
-		"lib":"./lib"
+	"devDependencies":{
 	},
-	"maintainers":[
-		{
-			"name":"Courtney Robinson",
-			"email":"higgs-node@crlog.info",
-			"url":"http://crlog.info"
-		}
-	],
-	"licenses":[
-		{
-			"type":"Apache V2",
-			"url":"https://github.com/zcourts/higgs-node/blob/master/LICENSE.md"
-		}
-	],
-	"repositories":[
-		{
-			"type":"git",
-			"url":"https://github.com/zcourts/higgs-node.git"
-		}
-	],
-	"readme":"..."
+	"keywords":["higgs", "boson", "tcp", "buffer", "byte", "binary", "protocol"],
+	"repository":"git://github.com/zcourts/higgs-node.git",
+	"main":"higgs",
+	"bin":{
+		"higgs":"./bin/higgs"
+	},
+	"scripts":{    },
+	"engines":{
+		"node":"*"
+	}
 }
