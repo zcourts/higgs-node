@@ -67,7 +67,11 @@ function BosonWriter() {
                 self.writeMap(arg)
                 break;
             default :
-                throw new Error("Unsupported type. Unable to serialize object")
+                if (arg === undefined) {
+                    self.writeNull()
+                } else {
+                    throw new Error("Unsupported type. Unable to serialize object")
+                }
         }
     }
     self.writeFloat = function (arg) {
