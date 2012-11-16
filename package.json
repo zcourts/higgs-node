@@ -12,7 +12,7 @@
 	"repository":"git://github.com/zcourts/higgs-node.git",
 	"main":"higgs",
 	"bin":{
-		"higgs":"./bin/higgs"
+		"higgs":"./higgs.js"
 	},
 	"scripts":{    },
 	"engines":{
