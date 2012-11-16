@@ -7,6 +7,7 @@ function BosonClient(host, port) {
     self.callbacks = {}
     self.onConnectCallbacks = []
     self.reconnect = true
+    self.reconnecting = false
     /**
      * Have a callback function invoked when the client is connected or re-connected
      * @param callback
@@ -33,8 +34,11 @@ function BosonClient(host, port) {
             }
         });
         self.retryConnection = function () {
-            if (self.reconnect) {
+            self.connected = false
+            if (self.reconnect && !self.reconnecting) {
+                self.reconnecting = true
                 setTimeout(function () {
+                    self.reconnecting = false
                     console.log('Attempting reconnect to ' + host + ":" + port);
                     self.client = self.connect()
                 }, 5000)
@@ -62,6 +66,9 @@ function BosonClient(host, port) {
     }
 
     self.invoke = function (method, arguments, callback) {
+        if (!self.connected && self.reconnect) {
+            self.retryConnection()
+        }
         var md5 = crypto.createHash("md5")
         md5.update('' + Math.random())
         var id = md5.digest("hex")
