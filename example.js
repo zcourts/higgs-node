@@ -17,7 +17,7 @@ var higgs = require("./higgs.js")
 var client = new higgs.BosonClient("localhost", 11000)
 client.connect()
 client.onConnect(function () {
-    client.invoke('get_recent_posts', ['8f361207e2968eaf27ffc6b5d0bea853'], function (a) {
+    client.invoke('circular', [], function (a) {
         console.log(a)
     })
 })

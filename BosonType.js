@@ -18,6 +18,7 @@ var BosonType = {
     LIST:12,
     MAP:13,
     POLO:14,
+    REFERENCE:15,
     //request response flags,
     REQUEST_METHOD_NAME:-127,
     REQUEST_PARAMETERS:-126,

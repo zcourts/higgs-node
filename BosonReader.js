@@ -2,6 +2,12 @@ var BosonType = require("./BosonType.js").BosonType
 function BosonReader(buffer, protocolVersion, total) {
     var self = this
     self.readerIndex = 0
+    self.protocol = protocolVersion
+    self.size = total
+    self.method = ""
+    self.callback = ""
+    self.arguments = []
+    self.references = {};
     self.readByte = function () {
         //read byte from the current reader index then advance index by 1
         return buffer.readInt8(self.readerIndex++)
@@ -110,11 +116,16 @@ function BosonReader(buffer, protocolVersion, total) {
     }
     self.readPOLO = function () {
         //NOTE: using self.read* methods advances reader index so no need to do it in here
+        var refType = self.readByte()
+        var ref = self.readInt();
         //not required in JavaScript
         var t = self.readByte()
         var className = self.readBosonDataType(t)
         var size = self.readInt()
         var hash = {}
+        if (ref > -1) {
+            self.references[ref] = hash
+        }
         for (var i = 0; i < size; i++) {
             //get the type of this element's key
             var keyType = self.readByte()
@@ -126,11 +137,18 @@ function BosonReader(buffer, protocolVersion, total) {
         }
         return hash
     }
-    self.protocol = protocolVersion
-    self.size = total
-    self.method = ""
-    self.callback = ""
-    self.arguments = []
+    /**
+     * Here's to treating objs like you would in Java or C#
+     * @see http://stackoverflow.com/a/3638034/400048
+     * As long as  self.references[ref]  is not re-assigned i.e. this self.references[ref] ={}
+     * only happens once per object then this should work.
+     * @return {*}
+     */
+    self.readReference = function () {
+        var ref = self.readInt();
+        var obj = self.references[ref];
+        return obj;
+    };
     self.deserialize = function () {
         try {
 //        var msg = buffer.toString('utf8', 0, self.size).trim()
@@ -197,6 +215,8 @@ function BosonReader(buffer, protocolVersion, total) {
                 return self.readMap()
             case BosonType.POLO:
                 return self.readPOLO()
+            case BosonType.REFERENCE:
+                return self.readReference();
         }
     }
 }
