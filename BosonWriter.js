@@ -118,6 +118,8 @@ function BosonWriter() {
     }
     self.writeArray = function (arguments) {
         self.writeBosonType(BosonType.ARRAY)
+        //write null for the component type
+        self.writeNull()
         var size = new Buffer(4)
         //write how many items are in the array
         size.writeInt32BE(arguments.length, 0)

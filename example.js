@@ -1,14 +1,23 @@
 var higgs = require("./higgs.js")
-var client = new higgs.BosonClient("localhost", 12001)
+//var client = new higgs.BosonClient("localhost", 12001)
+//client.connect()
+//client.onConnect(function () {
+//    //invoke 10 times
+//    for (var i = 0; i < 10; i++) {
+//        client.invoke('nodejs', [
+//            1.2, i, null,
+//            {a:1, v:12345*i},
+//            [i,1, 2, 3],
+//            true, "test"
+//        ], function (a) {
+//            console.log(a)
+//        })
+//    }
+//})
+var client = new higgs.BosonClient("localhost", 11000)
 client.connect()
-//invoke 1k times
-for (var i = 0; i < 1000; i++) {
-    client.invoke('nodejs', [
-        1.2, 1, null,
-        {a:1, v:12345},
-        [1, 2, 3],
-        true, "test"
-    ], function (a) {
+client.onConnect(function () {
+    client.invoke('get_recent_posts', ['8f361207e2968eaf27ffc6b5d0bea853'], function (a) {
         console.log(a)
     })
-}
+})

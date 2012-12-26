@@ -1,5 +1,5 @@
 var BosonType = require("./BosonType.js").BosonType
-function BosonReader(buffer) {
+function BosonReader(buffer, protocolVersion, total) {
     var self = this
     self.readerIndex = 0
     self.readByte = function () {
@@ -65,6 +65,8 @@ function BosonReader(buffer) {
     }
     self.readArray = function () {
         //NOTE: using self.read* methods advances reader index so no need to do it in here
+        //read array component type, not required for JavaScript
+        var ctype = self.readByte()
         var size = self.readInt()
         var arr = []
         for (var i = 0; i < size; i++) {
@@ -75,6 +77,22 @@ function BosonReader(buffer) {
         }
         return arr
     }
+    self.readList = function () {
+        //NOTE: using self.read* methods advances reader index so no need to do it in here
+        var size = self.readInt()
+        var arr = []
+        for (var i = 0; i < size; i++) {
+            //get the type of this element in the array
+            var type = self.readByte()
+            var obj = self.readBosonDataType(type)
+            arr.push(obj)
+        }
+        return arr
+    }
+    /**
+     * Read a Map
+     * @return {Object}
+     */
     self.readMap = function () {
         //NOTE: using self.read* methods advances reader index so no need to do it in here
         var size = self.readInt()
@@ -90,40 +108,63 @@ function BosonReader(buffer) {
         }
         return hash
     }
-    self.protocol = self.readByte() //first byte = protocol version
-    self.size = self.readInt() //first 4 bytes = int size of message
+    self.readPOLO = function () {
+        //NOTE: using self.read* methods advances reader index so no need to do it in here
+        //not required in JavaScript
+        var t = self.readByte()
+        var className = self.readBosonDataType(t)
+        var size = self.readInt()
+        var hash = {}
+        for (var i = 0; i < size; i++) {
+            //get the type of this element's key
+            var keyType = self.readByte()
+            var key = self.readBosonDataType(keyType)
+            //get the type of this element's value
+            var valueType = self.readByte()
+            var value = self.readBosonDataType(valueType)
+            hash[key] = value
+        }
+        return hash
+    }
+    self.protocol = protocolVersion
+    self.size = total
     self.method = ""
     self.callback = ""
     self.arguments = []
     self.deserialize = function () {
-        //var msg = buffer.toString('utf8', self.readerIndex, self.size).trim()
-        //console.log(self.protocol, self.readerIndex, self.size, buffer.length, msg.length, msg)
-        while (self.readerIndex < buffer.length) {
-            var type = self.readByte()
+        try {
+//        var msg = buffer.toString('utf8', 0, self.size).trim()
+//        console.log(msg)
+            while (self.readerIndex < buffer.length) {
+                var type = self.readByte()
 //explicitly get type in switch statement because the read* method
 //do not read the byte which specifies their type information
-            switch (type) {
-                case BosonType.RESPONSE_METHOD_NAME:
-                    var type = self.readByte()
-                    self.method = self.readString()
-                    break;
-                case BosonType.RESPONSE_PARAMETERS:
-                    var type = self.readByte()
-                    self.arguments = self.readArray()
-                    break;
-                case BosonType.REQUEST_METHOD_NAME:
-                    var type = self.readByte()
-                    self.method = self.readString()
-                    break;
-                case BosonType.REQUEST_CALLBACK:
-                    var type = self.readByte()
-                    self.callback = self.readString()
-                    break;
-                case BosonType.REQUEST_PARAMETERS:
-                    var type = self.readByte()
-                    self.arguments = self.readArray()
-                    break;
+                switch (type) {
+                    case BosonType.RESPONSE_METHOD_NAME:
+                        var type = self.readByte()
+                        self.method = self.readString()
+                        break;
+                    case BosonType.RESPONSE_PARAMETERS:
+                        var type = self.readByte()
+                        self.arguments = self.readArray()
+                        break;
+                    case BosonType.REQUEST_METHOD_NAME:
+                        var type = self.readByte()
+                        self.method = self.readString()
+                        break;
+                    case BosonType.REQUEST_CALLBACK:
+                        var type = self.readByte()
+                        self.callback = self.readString()
+                        break;
+                    case BosonType.REQUEST_PARAMETERS:
+                        var type = self.readByte()
+                        self.arguments = self.readArray()
+                        break;
+                }
             }
+        } catch (e) {
+            console.log(self.size, self.readerIndex, buffer.length)
+            console.log(e)
         }
     }
     self.readBosonDataType = function (type) {
@@ -151,13 +192,11 @@ function BosonReader(buffer) {
             case BosonType.ARRAY:
                 return self.readArray()
             case BosonType.LIST:
-                //come on its java script, list, array...all the same
-                return self.readArray()
+                return self.readList()
             case BosonType.MAP:
                 return self.readMap()
             case BosonType.POLO:
-                // :-) again...map, object...one and the same
-                return self.readMap()
+                return self.readPOLO()
         }
     }
 }
